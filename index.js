@@ -1,8 +1,9 @@
 #!/usr/bin/env node
-const fs = require('fs');
+import fs from 'fs';
+import Dewey from './dewey.js';
 
-const [,, ...arguments] = process.argv;
-const [argsStartingDir, argsConfigPath] = arguments;
+const [,, ...args] = process.argv;
+const [argsStartingDir, argsConfigPath] = args;
 const configPath = argsConfigPath || './.deweyrc';
 const startingDir = argsStartingDir || './';
 
@@ -22,5 +23,6 @@ try {
   process.exit();
 }
 
-console.log(config);
-console.log(dir);
+const dewey = new Dewey(startingDir, config);
+
+dewey.run();

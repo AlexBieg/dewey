@@ -4,10 +4,16 @@
   "description": "An NPM package for testing directory structures",
   "main": "index.js",
   "bin": {
-    "dewey": "index.js"
+    "dewey": "dist/index.js"
+  },
+  "watch": {
+    "build": "{index,dewey}.js"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "rimraf dist/ && babel ./ --out-dir dist/ --ignore ./node_modules,./.babelrc,./package.json,./npm-debug.log --copy-files",
+    "postinstall": "npm run build",
+    "watch": "npm-watch"
   },
   "repository": {
     "type": "git",
@@ -18,5 +24,11 @@
   "bugs": {
     "url": "https://github.com/AlexBieg/dewey/issues"
   },
-  "homepage": "https://github.com/AlexBieg/dewey#readme"
+  "homepage": "https://github.com/AlexBieg/dewey#readme",
+  "devDependencies": {
+    "babel-cli": "^6.26.0",
+    "babel-preset-es2015": "^6.24.1",
+    "npm-watch": "^0.6.0",
+    "rimraf": "^2.6.3"
+  }
 }
