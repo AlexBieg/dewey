@@ -1,0 +1,22 @@
+{
+  "name": "dewey",
+  "version": "0.1.0",
+  "description": "An NPM package for testing directory structures",
+  "main": "index.js",
+  "bin": {
+    "dewey": "index.js"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/AlexBieg/dewey.git"
+  },
+  "author": "Alex Bieg",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/AlexBieg/dewey/issues"
+  },
+  "homepage": "https://github.com/AlexBieg/dewey#readme"
+}
