@@ -1,2 +1,2 @@
 # dewey
-A package for testing directory structures
+An NPM package for testing directory structures
