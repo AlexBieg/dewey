@@ -2,7 +2,10 @@
   "name": "dewey",
   "version": "0.1.0",
   "description": "An NPM package for testing directory structures",
-  "main": "index.js",
+  "main": "dist/index.js",
+  "files": [
+    "dist"
+  ],
   "bin": {
     "dewey": "dist/index.js"
   },
@@ -30,5 +33,8 @@
     "babel-preset-es2015": "^6.24.1",
     "npm-watch": "^0.6.0",
     "rimraf": "^2.6.3"
+  },
+  "dependencies": {
+    "chalk": "^2.4.2"
   }
 }
