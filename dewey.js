@@ -28,9 +28,10 @@ class Dewey {
   }
 
   testDir(dir, config, pathToDir) {
-    const names = fs.readdirSync(path.join(...pathToDir, dir));
+    const currentPath = [...pathToDir, dir];
+    const names = fs.readdirSync(path.join(...currentPath));
     const { files, dirs } = names.reduce((acc, name) => {
-      const stat = fs.lstatSync(path.join(...pathToDir, dir, name));
+      const stat = fs.lstatSync(path.join(...currentPath, name));
       if (stat.isFile()) {
         acc.files.push(name);
       } else if (stat.isDirectory()) {
@@ -41,9 +42,9 @@ class Dewey {
     }, { files: [], dirs: [] });
 
     files.forEach((file) => {
-      if (this.matchIgnore(file, config)) {
+      if (this.matchIgnore(file, config, currentPath)) {
         console.log(chalk.gray('◉', file))
-      } else if (this.matchFile(file, config)) {
+      } else if (this.matchFile(file, config, currentPath)) {
         console.log(chalk.green('✓', file));
         this.successes.push(file);
       } else {
@@ -53,49 +54,49 @@ class Dewey {
     });
 
     dirs.forEach((childDir) => {
-      if (this.matchIgnore(childDir, config)) {
+      if (this.matchIgnore(childDir, config, currentPath)) {
         console.log(chalk.yellow('◉', childDir))
       } else {
-        const dirConfig = this.getConfigForDir(childDir, config, dir);
+        const dirConfig = this.getConfigForDir(childDir, config, currentPath);
         if (!dirConfig) {
           console.error(chalk.red('𝘅', childDir));
           this.errors.push(childDir)
         } else {
           console.log(chalk.green('✓', childDir));
           this.successes.push(childDir);
-          this.testDir(childDir, dirConfig, [...pathToDir, dir]);
+          this.testDir(childDir, dirConfig, currentPath);
         }
       }
     })
   }
 
-  matchIgnore(name, config) {
+  matchIgnore(name, config, pathToDir) {
     return _get(config, 'ignore', []).some((matcher) => {
-      return this.match(name, matcher);
+      return this.match(name, matcher, pathToDir);
     })
   }
 
-  matchFile(file, config, dir) {
+  matchFile(file, config, pathToDir) {
     return _get(config, 'files', []).some((matcher) => {
-      return this.match(file, matcher, dir);
+      return this.match(file, matcher, pathToDir);
     })
   }
 
-  match(name, matcher, dir) {
+  match(name, matcher, path) {
     if (typeof matcher === 'string') {
       return matcher === name;
     } else if (typeof matcher === 'function') {
-      return matcher(name, dir)
+      return matcher(path, name) === name;
     } else if (matcher instanceof RegExp) {
       return name.match(matcher);
     }
   }
 
-  getConfigForDir(dir, parentConfig, parentDir) {
+  getConfigForDir(dir, parentConfig, pathToDir) {
     let config;
 
     _get(parentConfig, 'dirs', []).forEach((dirConfig) => {
-      if (this.match(dir, dirConfig.dirName, parentDir)) {
+      if (this.match(dir, dirConfig.dirName, pathToDir)) {
         config = dirConfig.config;
       }
     })
