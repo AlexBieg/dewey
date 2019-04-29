@@ -2,6 +2,7 @@
 import fs from 'fs';
 import Dewey from './dewey.js';
 import path from 'path';
+import chalk from 'chalk';
 
 const [,, ...args] = process.argv;
 const [argsStartingDir, argsConfigPath] = args;
@@ -12,7 +13,7 @@ let dir;
 try {
   dir = fs.readdirSync(startingDir);
 } catch (e) {
-  console.error('\x1b[31m', 'Unable to find starting directory');
+  console.error(chalk.red('Unable to find starting directory'));
   process.exit();
 }
 
@@ -20,7 +21,7 @@ let config;
 try {
   config = require(path.resolve(process.cwd(), configPath));
 } catch (e) {
-  console.error('\x1b[31m', 'No/Invalid dewey config file found');
+  console.error(chalk.red('No/Invalid dewey config file found'));
   process.exit();
 }
 
