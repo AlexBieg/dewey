@@ -43,30 +43,56 @@ class Dewey {
 
     files.forEach((file) => {
       if (this.matchIgnore(file, config, currentPath)) {
-        console.log(chalk.gray('◉', file))
+        console.log(chalk.gray('◉', file, '(ignored)'))
       } else if (this.matchFile(file, config, currentPath)) {
         console.log(chalk.green('✓', file));
         this.successes.push(file);
       } else {
         console.error(chalk.red('𝘅', file));
-        this.errors.push(file)
+        this.errors.push({
+          name: file,
+          path: currentPath,
+          matches: this.getResolvedFileMatches(config, currentPath, file),
+        })
       }
     });
 
     dirs.forEach((childDir) => {
       if (this.matchIgnore(childDir, config, currentPath)) {
-        console.log(chalk.blue('◉', childDir))
+        console.log(chalk.blue('◉', childDir, '(ignored)'))
       } else {
         const dirConfig = this.getConfigForDir(childDir, config, currentPath);
         if (!dirConfig) {
           console.error(chalk.red('𝘅', childDir));
-          this.errors.push(childDir)
+          this.errors.push({
+            name: childDir,
+            path: currentPath,
+            matches: this.getResolvedDirMatches(config, currentPath, childDir),
+          })
         } else {
           console.log(chalk.green('✓', childDir));
           this.successes.push(childDir);
           this.testDir(childDir, dirConfig, currentPath);
         }
       }
+    })
+  }
+
+  getResolvedFileMatches(config, currentPath, file) {
+    return _get(config, 'files', []).map(matcher => {
+      if (typeof matcher === 'function') {
+        return matcher(currentPath, file);
+      }
+      return matcher;
+    })
+  }
+
+  getResolvedDirMatches(config, currentPath, dir) {
+    return _get(config, 'dirs', []).map(matcher => {
+      if (typeof matcher === 'function') {
+        return matcher(currentPath, dir);
+      }
+      return matcher;
     })
   }
 
@@ -112,7 +138,7 @@ class Dewey {
     console.log('Successes:', this.successes.length);
     console.log('Failures:', this.errors.length);
     this.errors.forEach(error => {
-      console.error(chalk.red(error));
+      console.error(chalk.red(path.join(...error.path, chalk.bold(error.name))), '!==', error.matches);
     })
   }
 
