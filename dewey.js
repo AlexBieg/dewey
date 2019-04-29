@@ -55,7 +55,7 @@ class Dewey {
 
     dirs.forEach((childDir) => {
       if (this.matchIgnore(childDir, config, currentPath)) {
-        console.log(chalk.yellow('◉', childDir))
+        console.log(chalk.blue('◉', childDir))
       } else {
         const dirConfig = this.getConfigForDir(childDir, config, currentPath);
         if (!dirConfig) {
