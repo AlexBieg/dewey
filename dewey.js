@@ -17,7 +17,6 @@ class Dewey {
   run() {
     this.test();
     this.showResults();
-    this.clearResults();
   }
 
   /**
@@ -25,6 +24,14 @@ class Dewey {
    */
   test() {
     this.testDir(this.dir, this.config, []);
+  }
+
+  printItem(color, name, currentPath, prefix, suffix) {
+    console.log(chalk[color](
+      prefix ? prefix : '',
+      path.join(...currentPath, name),
+      suffix ? suffix : ''
+     ));
   }
 
   testDir(dir, config, pathToDir) {
@@ -43,12 +50,12 @@ class Dewey {
 
     files.forEach((file) => {
       if (this.matchIgnore(file, config, currentPath)) {
-        console.log(chalk.gray('◉', file, '(ignored)'))
+        this.printItem('blue', file, currentPath, '◉', '(ignored)');
       } else if (this.matchFile(file, config, currentPath)) {
-        console.log(chalk.green('✓', file));
+        this.printItem('green', file, currentPath, '✓');
         this.successes.push(file);
       } else {
-        console.error(chalk.red('𝘅', file));
+        this.printItem('red', file, currentPath, '𝘅');
         this.errors.push({
           name: file,
           path: currentPath,
@@ -59,18 +66,18 @@ class Dewey {
 
     dirs.forEach((childDir) => {
       if (this.matchIgnore(childDir, config, currentPath)) {
-        console.log(chalk.blue('◉', childDir, '(ignored)'))
+        this.printItem('blue', childDir, currentPath, '◉', '(ignored)');
       } else {
         const dirConfig = this.getConfigForDir(childDir, config, currentPath);
         if (!dirConfig) {
-          console.error(chalk.red('𝘅', childDir));
+          this.printItem('red', childDir, currentPath, '𝘅');
           this.errors.push({
             name: childDir,
             path: currentPath,
             matches: this.getResolvedDirMatches(config, currentPath, childDir),
           })
         } else {
-          console.log(chalk.green('✓', childDir));
+          this.printItem('green', childDir, currentPath, '✓');
           this.successes.push(childDir);
           this.testDir(childDir, dirConfig, currentPath);
         }
@@ -138,15 +145,9 @@ class Dewey {
     console.log('Successes:', this.successes.length);
     console.log('Failures:', this.errors.length);
     this.errors.forEach(error => {
-      console.error(chalk.red(path.join(...error.path, chalk.bold(error.name))), '!==', error.matches);
+      this.printItem('red', error.name, error.path);
+      console.log('\t', 'Should be one of:', error.matches);
     })
-  }
-
-  /**
-   * Clear the results of a test
-   */
-  clearResults() {
-    this.errors = [];
   }
 }
 
