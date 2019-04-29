@@ -26,11 +26,11 @@ class Dewey {
     this.testDir(this.dir, this.config, []);
   }
 
-  printItem(color, name, currentPath, prefix, suffix) {
+  printItem(color, name, currentPath, _prefix, _suffix) {
     console.log(chalk[color](
-      prefix ? prefix : '',
+      _prefix ? _prefix : '',
       path.join(...currentPath, name),
-      suffix ? suffix : ''
+      _suffix ? _suffix : ''
      ));
   }
 
@@ -96,10 +96,10 @@ class Dewey {
 
   getResolvedDirMatches(config, currentPath, dir) {
     return _get(config, 'dirs', []).map(matcher => {
-      if (typeof matcher === 'function') {
-        return matcher(currentPath, dir);
+      if (typeof matcher.dirName === 'function') {
+        return matcher.dirName(currentPath, dir);
       }
-      return matcher;
+      return matcher.dirName;
     })
   }
 
@@ -126,14 +126,29 @@ class Dewey {
   }
 
   getConfigForDir(dir, parentConfig, pathToDir) {
-    let config;
-
-    _get(parentConfig, 'dirs', []).forEach((dirConfig) => {
+    const config = _get(parentConfig, 'dirs', []).reduce((acc, dirConfig) => {
       if (this.match(dir, dirConfig.dirName, pathToDir)) {
-        config = dirConfig.config;
+        if (!acc) {
+          return dirConfig.config;
+        }
+        return {
+          ignore: [
+            ..._get(acc, 'ignore', []),
+            ..._get(dirConfig, 'ignore', []),
+          ],
+          files: [
+            ..._get(acc, 'files', []),
+            ..._get(dirConfig, 'files', [])
+          ],
+          dirs: [
+            ..._get(acc, 'dirs', []),
+            ..._get(acc, 'dirs', []),
+          ]
+        };
       }
-    })
-    
+      return acc;
+    }, undefined);
+
     return config;
   }
 
