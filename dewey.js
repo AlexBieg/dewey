@@ -88,7 +88,7 @@ class Dewey {
   getResolvedFileMatches(config, currentPath, file) {
     return _get(config, 'files', []).map(matcher => {
       if (typeof matcher === 'function') {
-        return matcher(currentPath, file);
+        return matcher(currentPath.slice().reverse(), file);
       }
       return matcher;
     })
@@ -119,7 +119,7 @@ class Dewey {
     if (typeof matcher === 'string') {
       return matcher === name;
     } else if (typeof matcher === 'function') {
-      return matcher(path, name) === name;
+      return matcher(path.slice().reverse(), name) === name;
     } else if (matcher instanceof RegExp) {
       return name.match(matcher);
     }
@@ -156,7 +156,7 @@ class Dewey {
    * Show the results of a test
    */
   showResults() {
-    console.log('\n===Results===');
+    console.log('\n====Results====');
     console.log('Successes:', this.successes.length);
     console.log('Failures:', this.errors.length);
     this.errors.forEach(error => {
