@@ -34,16 +34,16 @@ class Dewey {
      ));
   }
 
-  printSuccess(path, file) {
-    this.printItem('green', file, path, '✓');
+  printSuccess(path, name) {
+    this.printItem('green', name, path, '✓');
   }
 
-  printError(path, file) {
-    this.printItem('red', file, path, '𝘅');
+  printError(path, name) {
+    this.printItem('red', name, path, '𝘅');
   }
 
-  printIgnored(path, file) {
-    this.printItem('blue', file, path, '◉', '(ignored)');
+  printIgnored(path, name) {
+    this.printItem('blue', name, path, '◉', '(ignored)');
   }
 
   testDir(dir, config, pathToDir) {
@@ -98,7 +98,8 @@ class Dewey {
   }
 
   getResolvedFileMatches(config, currentPath, file) {
-    return _get(config, 'files', []).map(matcher => {
+    return _get(config, 'files', []).map(fileConfig => {
+      const matcher = fileConfig.name;
       if (typeof matcher === 'function') {
         return matcher(currentPath.slice().reverse(), file);
       }
@@ -107,11 +108,12 @@ class Dewey {
   }
 
   getResolvedDirMatches(config, currentPath, dir) {
-    return _get(config, 'dirs', []).map(matcher => {
-      if (typeof matcher.dirName === 'function') {
-        return matcher.dirName(currentPath, dir);
+    return _get(config, 'dirs', []).map(dirConfig => {
+      const matcher = dirConfig.name;
+      if (typeof matcher === 'function') {
+        return matcher(currentPath, dir);
       }
-      return matcher.dirName;
+      return matcher;
     })
   }
 
@@ -122,8 +124,8 @@ class Dewey {
   }
 
   matchFile(file, config, pathToDir) {
-    return _get(config, 'files', []).some((matcher) => {
-      return this.match(file, matcher, pathToDir);
+    return _get(config, 'files', []).some((fileConfig) => {
+      return this.match(file, fileConfig.name, pathToDir);
     })
   }
 
@@ -139,7 +141,7 @@ class Dewey {
 
   getConfigForDir(dir, parentConfig, pathToDir) {
     const config = _get(parentConfig, 'dirs', []).reduce((acc, dirConfig) => {
-      if (this.match(dir, dirConfig.dirName, pathToDir)) {
+      if (this.match(dir, dirConfig.name, pathToDir)) {
         if (!acc) {
           return dirConfig.config;
         }
