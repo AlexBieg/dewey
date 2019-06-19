@@ -34,6 +34,18 @@ class Dewey {
      ));
   }
 
+  printSuccess(path, file) {
+    this.printItem('green', file, path, '✓');
+  }
+
+  printError(path, file) {
+    this.printItem('red', file, path, '𝘅');
+  }
+
+  printIgnored(path, file) {
+    this.printItem('blue', file, path, '◉', '(ignored)');
+  }
+
   testDir(dir, config, pathToDir) {
     const currentPath = [...pathToDir, dir];
     const names = fs.readdirSync(path.join(...currentPath));
@@ -50,12 +62,12 @@ class Dewey {
 
     files.forEach((file) => {
       if (this.matchIgnore(file, config, currentPath)) {
-        this.printItem('blue', file, currentPath, '◉', '(ignored)');
+        this.printIgnored(currentPath, file);
       } else if (this.matchFile(file, config, currentPath)) {
-        this.printItem('green', file, currentPath, '✓');
+        this.printSuccess(currentPath, file);
         this.successes.push(file);
       } else {
-        this.printItem('red', file, currentPath, '𝘅');
+        this.printError(currentPath, file);
         this.errors.push({
           name: file,
           path: currentPath,
@@ -66,18 +78,18 @@ class Dewey {
 
     dirs.forEach((childDir) => {
       if (this.matchIgnore(childDir, config, currentPath)) {
-        this.printItem('blue', childDir, currentPath, '◉', '(ignored)');
+        this.printIgnored(currentPath, childDir);
       } else {
         const dirConfig = this.getConfigForDir(childDir, config, currentPath);
         if (!dirConfig) {
-          this.printItem('red', childDir, currentPath, '𝘅');
+          this.printError(currentPath, childDir);
           this.errors.push({
             name: childDir,
             path: currentPath,
             matches: this.getResolvedDirMatches(config, currentPath, childDir),
           })
         } else {
-          this.printItem('green', childDir, currentPath, '✓');
+          this.printSuccess(currentPath, childDir);
           this.successes.push(childDir);
           this.testDir(childDir, dirConfig, currentPath);
         }
