@@ -4,9 +4,10 @@ import path from 'path';
 import { get as _get } from 'lodash';
 
 class Dewey {
-  constructor(dir, config) {
+  constructor(dir, config, showOutput=true) {
     this.dir = dir;
     this.config = config;
+    this.showOutput = showOutput;
     this.errors = [];
     this.successes = [];
   }
@@ -27,11 +28,13 @@ class Dewey {
   }
 
   printItem(color, name, currentPath, _prefix, _suffix) {
-    console.log(chalk[color](
-      _prefix ? _prefix : '',
-      path.join(...currentPath, name),
-      _suffix ? _suffix : ''
-     ));
+    if (this.showOutput) {
+      console.log(chalk[color](
+        _prefix ? _prefix : '',
+        path.join(...currentPath, name),
+        _suffix ? _suffix : ''
+      ));
+    }
   }
 
   printSuccess(path, name) {
@@ -93,7 +96,9 @@ class Dewey {
         } else {
           this.printSuccess(currentPath, childDir);
           this.successes.push(childDir);
-          this.testDir(childDir, dirConfig, currentPath);
+          if (Object.keys(dirConfig).length) {
+            this.testDir(childDir, dirConfig, currentPath);
+          }
         }
       }
     })
@@ -117,7 +122,7 @@ class Dewey {
 
   matchFile(file, config, pathToDir) {
     return _get(config, 'files', []).some((fileConfig) => {
-      return this.match(file, fileConfig.name, pathToDir);
+      return this.match(file, fileConfig.name ? fileConfig.name : fileConfig, pathToDir);
     })
   }
 
@@ -135,7 +140,7 @@ class Dewey {
     const config = _get(parentConfig, 'dirs', []).reduce((acc, dirConfig) => {
       if (this.match(dir, dirConfig.name, pathToDir)) {
         if (!acc) {
-          return dirConfig.config;
+          return dirConfig.config || {};
         }
         return {
           ignore: [
@@ -162,13 +167,19 @@ class Dewey {
    * Show the results of a test
    */
   showResults() {
-    console.log('\n====Results====');
-    console.log('Successes:', this.successes.length);
-    console.log('Failures:', this.errors.length);
-    this.errors.forEach(error => {
-      this.printItem('red', error.name, error.path);
-      console.log('\t', 'Should be one of:', error.matches);
-    })
+    if (this.showOutput) {
+      console.log('\n====Results====');
+      console.log('Successes:', this.successes.length);
+      console.log('Failures:', this.errors.length);
+      this.errors.forEach(error => {
+        this.printItem('red', error.name, error.path);
+        console.log('\t', 'Should be one of:', error.matches);
+      })
+    }
+
+    if (this.errors.length) {
+      throw new Error(`Too many errors`);
+    }
   }
 }
 
