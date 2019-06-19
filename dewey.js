@@ -60,6 +60,7 @@ class Dewey {
       return acc;
     }, { files: [], dirs: [] });
 
+    // Test all files in the directory
     files.forEach((file) => {
       if (this.matchIgnore(file, config, currentPath)) {
         this.printIgnored(currentPath, file);
@@ -71,11 +72,12 @@ class Dewey {
         this.errors.push({
           name: file,
           path: currentPath,
-          matches: this.getResolvedFileMatches(config, currentPath, file),
+          matches: this.getResolvedMatches(config, currentPath, file, 'files'),
         })
       }
     });
 
+    // Test all directories in the directory
     dirs.forEach((childDir) => {
       if (this.matchIgnore(childDir, config, currentPath)) {
         this.printIgnored(currentPath, childDir);
@@ -86,7 +88,7 @@ class Dewey {
           this.errors.push({
             name: childDir,
             path: currentPath,
-            matches: this.getResolvedDirMatches(config, currentPath, childDir),
+            matches: this.getResolvedMatches(config, currentPath, childDir, 'dirs'),
           })
         } else {
           this.printSuccess(currentPath, childDir);
@@ -97,24 +99,14 @@ class Dewey {
     })
   }
 
-  getResolvedFileMatches(config, currentPath, file) {
-    return _get(config, 'files', []).map(fileConfig => {
-      const matcher = fileConfig.name;
+  getResolvedMatches(config, currentPath, name, type) {
+    return _get(config, type, []).map(itemConfig => {
+      const matcher = itemConfig.name;
       if (typeof matcher === 'function') {
-        return matcher(currentPath.slice().reverse(), file);
+        return matcher(currentPath.slice().reverse(), name);
       }
       return matcher;
-    })
-  }
-
-  getResolvedDirMatches(config, currentPath, dir) {
-    return _get(config, 'dirs', []).map(dirConfig => {
-      const matcher = dirConfig.name;
-      if (typeof matcher === 'function') {
-        return matcher(currentPath, dir);
-      }
-      return matcher;
-    })
+    });
   }
 
   matchIgnore(name, config, pathToDir) {
