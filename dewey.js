@@ -1,7 +1,10 @@
 import fs from 'fs';
 import chalk from 'chalk';
 import path from 'path';
-import { get as _get } from 'lodash';
+import {
+  get as _get,
+  differenceBy as _differenceBy
+} from 'lodash';
 
 class Dewey {
   constructor(dir, config, showOutput=true) {
@@ -63,13 +66,21 @@ class Dewey {
       return acc;
     }, { files: [], dirs: [] });
 
+    let completedFileConfig;
+    let incompleteRequiredFileConfigs = [..._get(config, 'files', []).filter(fc => fc.required)];
+    let incompleteRequiredDirConfigs = [..._get(config, 'dirs', []).filter(dc => dc.required)];
+
     // Test all files in the directory
     files.forEach((file) => {
       if (this.matchIgnore(file, config, currentPath)) {
         this.printIgnored(currentPath, file);
-      } else if (this.matchFile(file, config, currentPath)) {
+      } else if (completedFileConfig = this.matchFile(file, config, currentPath)) {
         this.printSuccess(currentPath, file);
         this.successes.push(file);
+
+        if (completedFileConfig.required) {
+          incompleteRequiredFileConfigs = incompleteRequiredFileConfigs.filter(ifc => ifc.name !== completedFileConfig.name);
+        }
       } else {
         this.printError(currentPath, file);
         this.errors.push({
@@ -99,9 +110,30 @@ class Dewey {
           if (Object.keys(dirConfig).length) {
             this.testDir(childDir, dirConfig, currentPath);
           }
+
+          const matchingConfigs = this.getDirMatchingConfigs(childDir, config, currentPath);
+          incompleteRequiredDirConfigs = _differenceBy(incompleteRequiredDirConfigs, matchingConfigs, (c) => c.name);
         }
       }
-    })
+    });
+
+    incompleteRequiredFileConfigs.forEach((fc) => {
+      this.errors.push({
+        required: true,
+        type: 'file',
+        name: fc.name,
+        path: currentPath,
+      });
+    });
+
+    incompleteRequiredDirConfigs.forEach((dc) => {
+      this.errors.push({
+        required: true,
+        type: 'dir',
+        name: dc.name,
+        path: currentPath,
+      });
+    });
   }
 
   getResolvedMatches(config, currentPath, name, type) {
@@ -121,9 +153,9 @@ class Dewey {
   }
 
   matchFile(file, config, pathToDir) {
-    return _get(config, 'files', []).some((fileConfig) => {
+    return _get(config, 'files', []).find((fileConfig) => {
       return this.match(file, fileConfig.name ? fileConfig.name : fileConfig, pathToDir);
-    })
+    });
   }
 
   match(name, matcher, path) {
@@ -153,7 +185,7 @@ class Dewey {
           ],
           dirs: [
             ..._get(acc, 'dirs', []),
-            ..._get(acc, 'dirs', []),
+            ..._get(dirConfig, 'dirs', []),
           ]
         };
       }
@@ -161,6 +193,10 @@ class Dewey {
     }, undefined);
 
     return config;
+  }
+
+  getDirMatchingConfigs(dir, parentConfig, pathToDir) {
+    return _get(parentConfig, 'dirs', []).filter(dirConfig => this.match(dir, dirConfig.name, pathToDir));
   }
 
   /**
@@ -171,10 +207,14 @@ class Dewey {
       console.log('\n====Results====');
       console.log('Successes:', this.successes.length);
       console.log('Failures:', this.errors.length);
-      this.errors.forEach(error => {
+      this.errors.filter(error => !error.required).forEach(error => {
         this.printItem('red', error.name, error.path);
         console.log('\t', 'Should be one of:', error.matches);
-      })
+      });
+
+      this.errors.filter(error => error.required).forEach(error => {
+        this.printItem('red', error.name, error.path, `Missing Required ${error.type === 'file' ? 'File' : 'Directory'}: `);
+      });
     }
 
     if (this.errors.length) {
