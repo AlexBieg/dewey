@@ -1,6 +1,13 @@
 # Dewey
 An NPM package for testing directory structures. Using a dewey config file you can specify the directory structure of your application and allow it to be tested.
 
+# Install
+```
+npm install dewey-decimal
+```
+
+Package Location: https://www.npmjs.com/package/dewey-decimal
+
 # Choosing a starting directory
 By default dewey starts in the same directory as your `package.json`. If you would like the testing to start in a different directory you may speciy that directory by passing the command line argument `--dir` to dewey.
 
