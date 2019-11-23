@@ -23,57 +23,99 @@ The config file is a javascript file that exports a single config object. This o
 ## A config object
 A config object loosely maps to a single directory and contains all information needed to test that directory. The config object exported from your config file should be set up to test the starting directory you have chosen. The config object has three properties that test the directory. An example config object looks like this:
 
-```
-const componentsConfig = {
+```js
+const singleComponentConfig = {
   files: [
-    { name: /scripts[1-9]\.js/}
+    { name: (path) => `${path[0]}.jsx` },
+    { name: (path) => `${path[0]}Model.js` },
   ]
-}
+};
+
+componentsConfig = {
+  dirs: [
+    {
+      name: 'Button',
+      config: singleComponentConfig,
+    },
+    {
+      name: 'Input',
+      config: singleComponentConfig,
+    }
+  ],
+};
+
+const scriptsConfig = {
+  files: [
+    { name: /script[1-9]\.js/}
+  ]
+};
 
 const config = {
-	ignore: [
-		'node_modules',
-	],
-	files: [
-		{ name: 'package.json' },
-		{ name: () => 'package-lock.json' },
-		{ name: /dewey\.config\.js/ },
-		{
-			name: 'required.js',
-			required: true,
-		}
-	],
-	dirs: [
-		{
-			name: 'scripts',
-			config: scriptsConfig,
-		},
-		{
-			name: 'components',
-			config: componentsConfig,
-		}
-	],
+  ignore: [
+    'node_modules',
+  ],
+  files: [
+    { name: 'package.json' },
+    { name: () => 'package-lock.json' },
+    { name: /dewey\.config\.js/ },
+    {
+      name: 'required.js',
+      required: true,
+    }
+  ],
+  dirs: [
+    {
+      name: 'scripts',
+      config: scriptsConfig,
+    },
+    {
+      name: 'components',
+      config: componentsConfig,
+    }
+  ],
 };
-```
 
+module.exports = config;
+```
+The above config would test a directory structure like this:
+```
+startingDirectory
+│   package.json
+│   package-lock.json
+|   dewey.config.js
+│
+└───scripts
+│   │   script0.js
+│   │   script8.js
+│   
+└───components
+    |
+    └───Button
+    |   |   Button.jsx
+    |   |   ButtonModel.js
+    |
+    └───Input
+        |   Input.jsx
+	|   InputModel.js
+```
 ### `files`
 The `files` property is an array of objects where each object can test one or more files. There are 2 properties for each file testing object.
 
 - `name`: The property that will test the name of the file. It can take 3 forms
   - string: a string comparison between the name property and file name. The below is an example of a file testing object that will match a file named `myfile.js`:
-  ```
+  ```js
   {
     name: 'myfile.js',
   }
   ```
   - regular expression: A regular expression can be used to test one or many files in a directory. The below example will match multiple files with names starting with `script` and a single number after:
-  ```
+  ```js
   {
     name: /script[1-9]\.js/,
   }
   ```
   - function: A function can be used for more verstitile file name testing. The function is passed two arguments. An array object representing the current path where the 0th element is the parent folder and the last element is the starting directory. The second argument is the name of the file being tested. The function should return a string that is the name of the file that can be here. The below example will match a file that has the same name as it's parent and is a `.jsx` file.
-  ```
+  ```js
   {
     name: (path, name) => return `${path[0]}.jsx`,
   }
@@ -85,19 +127,19 @@ The `dirs` property is an array of objects that that contain the testing informa
 
 - `name`: The property that will test the name of the directory. It can take 3 forms
   - string: a string comparison between the name property and the directory name. The below is an example of a file testing object that will match a file named `myDirectory`:
-  ```
+  ```js
   {
     name: 'myDirectory',
   }
   ```
   - regular expression: A regular expression can be used to test one or many directories in a directory. The below example will match multiple directories with names starting with `scripts` and a single number after:
-  ```
+  ```js
   {
     name: /scripts[1-9]\/,
   }
   ```
   - function: A function can be used for more verstitile directory name testing. The function is passed two arguments. An array object representing the current path where the 0th element is the parent folder and the last element is the starting directory. The second argument is the name of the directory being tested. The function should return a string that is the name of the directory that can be here. The below example will match a directory that has the same name as it's parent and ends with `scripts`.
-  ```
+  ```js
   {
     name: (path, name) => return `${path[0]}-scripts`,
   }
@@ -107,7 +149,7 @@ The `dirs` property is an array of objects that that contain the testing informa
 
 ### `ignore`
 The ignore property is an array of testing objects to specify files and directories that should not be tested. The properties in this array can take three forms and is structured the same way as the name fields for files and directories. The example below shows the three forms:
-```
+```js
 {
   ignore: [
     'ignore-this-file.js',
