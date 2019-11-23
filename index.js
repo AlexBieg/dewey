@@ -3,11 +3,10 @@ import fs from 'fs';
 import Dewey from './dewey.js';
 import path from 'path';
 import chalk from 'chalk';
+import yargs from 'yargs';
 
-const [,, ...args] = process.argv;
-const [argsStartingDir, argsConfigPath] = args;
-const configPath = argsConfigPath || './dewey.config.js';
-const startingDir = argsStartingDir || './';
+const configPath = yargs.argv.config || './dewey.config.js';
+const startingDir = yargs.argv.dir || './';
 
 let dir;
 try {
