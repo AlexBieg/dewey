@@ -162,9 +162,14 @@ class Dewey {
     if (typeof matcher === 'string') {
       return matcher === name;
     } else if (typeof matcher === 'function') {
-      return matcher(path.slice().reverse(), name) === name;
+      const newMatcher = matcher(path.slice().reverse(), name);
+      if (typeof newMatcher === "boolean") {
+        return newMatcher;
+      } else {
+        return this.match(name, newMatcher, path);
+      }
     } else if (matcher instanceof RegExp) {
-      return name.match(matcher);
+        return name.match(matcher);
     }
   }
 
@@ -218,7 +223,7 @@ class Dewey {
     }
 
     if (this.errors.length) {
-      throw new Error(`Too many errors`);
+      throw new Error('Tests failed.');
     }
   }
 }
