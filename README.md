@@ -94,7 +94,7 @@ startingDirectory
 └───scripts
 │   │   script0.js
 │   │   script8.js
-│   
+│
 └───components
     |
     └───Button
@@ -121,7 +121,7 @@ The `files` property is an array of objects where each object can test one or mo
     name: /script[1-9]\.js/,
   }
   ```
-  - function: A function can be used for more verstitile file name testing. The function is passed two arguments. An array object representing the current path where the 0th element is the parent folder and the last element is the starting directory. The second argument is the name of the file being tested. The function should return a string that is the name of the file that can be here. The below example will match a file that has the same name as it's parent and is a `.jsx` file.
+  - function: A function can be used for more verstitile file name testing. The function is passed two arguments. An array object representing the current path where the 0th element is the parent folder and the last element is the starting directory. The second argument is the name of the file being tested. The function should return a string or regex to test against the file name. Alternatively it can return a boolean indicating if the file has been matched correctly. The below example will match a file that has the same name as it's parent and is a `.jsx` file.
   ```js
   {
     name: (path, name) => return `${path[0]}.jsx`,
@@ -145,7 +145,7 @@ The `dirs` property is an array of objects that that contain the testing informa
     name: /scripts[1-9]\/,
   }
   ```
-  - function: A function can be used for more verstitile directory name testing. The function is passed two arguments. An array object representing the current path where the 0th element is the parent folder and the last element is the starting directory. The second argument is the name of the directory being tested. The function should return a string that is the name of the directory that can be here. The below example will match a directory that has the same name as it's parent and ends with `scripts`.
+  - function: A function can be used for more verstitile directory name testing. The function is passed two arguments. An array object representing the current path where the 0th element is the parent folder and the last element is the starting directory. The second argument is the name of the directory being tested. The function should return a string or regex to test against the file name. Alternatively it can return a boolean indicating if the file has been matched correctly. The below example will match a directory that has the same name as it's parent and ends with `scripts`.
   ```js
   {
     name: (path, name) => return `${path[0]}-scripts`,
