@@ -1,6 +1,6 @@
 {
   "name": "dewey-decimal",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "An NPM package for testing directory structures",
   "main": "dist/index.js",
   "files": [
