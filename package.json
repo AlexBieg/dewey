@@ -1,5 +1,5 @@
 {
-  "name": "dewey",
+  "name": "dewey-decimal",
   "version": "0.1.0",
   "description": "An NPM package for testing directory structures",
   "main": "dist/index.js",
@@ -14,8 +14,8 @@
   },
   "scripts": {
     "test": "jest --config ./jest.config.js",
-    "build": "rimraf dist/ && babel ./ --out-dir dist/ --ignore ./node_modules,./.babelrc,./package.json,./npm-debug.log --copy-files",
-    "postinstall": "npm run build",
+    "build": "rimraf dist/ && babel ./ --out-dir dist/ --ignore ./test,./jest.config.js,./node_modules,./.babelrc,./package.json,./npm-debug.log",
+    "prepublishOnly": "npm run build",
     "watch": "npm-watch"
   },
   "repository": {
